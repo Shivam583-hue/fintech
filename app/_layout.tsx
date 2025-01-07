@@ -1,3 +1,4 @@
+import Colors from '@/constants/Colors';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -43,6 +44,12 @@ function RootLayoutNav() {
   return (
     <Stack>
       <Stack.Screen name='index' options={{ headerShown: false }} />
+      <Stack.Screen name='signup' options={{
+        title: '',
+        headerBackTitle: '',
+        headerShadowVisible: false,
+        headerStyle: { backgroundColor: Colors.background },
+      }} />
     </Stack>
   );
 }
