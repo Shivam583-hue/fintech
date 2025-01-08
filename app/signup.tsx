@@ -17,6 +17,7 @@ const Page = () => {
     try {
       const fullPhoneNumber = `${countryCode}${phoneNumber}`
       await signUp?.create({ phoneNumber: fullPhoneNumber })
+      signUp!.preparePhoneNumberVerification()
       router.push({ pathname: '/login/[phone]', params: { phone: fullPhoneNumber } })
     } catch (error) {
       console.log("Error signing up", error)

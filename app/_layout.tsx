@@ -56,6 +56,7 @@ export function InitialLayout() {
   });
 
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -71,6 +72,10 @@ export function InitialLayout() {
   if (!loaded) {
     return null;
   }
+
+  useEffect(() => {
+    console.log("isSignedIn", isSignedIn)
+  }, [isSignedIn])
 
   return <Stack>
     <Stack.Screen name='index' options={{ headerShown: false }} />
