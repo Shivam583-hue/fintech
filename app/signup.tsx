@@ -8,6 +8,10 @@ const Page = () => {
   const [countryCode, setCountryCode] = React.useState('+91')
   const [phoneNumber, setPhoneNumber] = React.useState('')
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 90 : 0
+
+  const onSignup = () => {
+  }
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' keyboardVerticalOffset={keyboardVerticalOffset}>
       <View style={defaultStyles.container}>
