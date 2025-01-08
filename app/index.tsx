@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native' // Moved Image from 'react-native'
 import { ResizeMode, Video } from 'expo-av'
 import React, { useState } from 'react'
 import { useAssets } from 'expo-asset'
@@ -14,21 +14,22 @@ const Page = () => {
 
   return (
     <View style={styles.container}>
-      {assets && !videoError && (
-        <Video
-          useNativeControls
-          onError={(error) => {
-            console.error('Video error:', error)
-            setVideoError(true)
-          }}
-          isMuted
-          isLooping
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          source={{ uri: assets[0].uri }}
-          style={styles.video}
-        />
-      )}
+      <Image source={require('../assets/images/image2.jpg')} style={styles.image} /> {/* Added style for Image */}
+      {/* {assets && !videoError && (
+          <Video
+            useNativeControls
+            onError={(error) => {
+              console.error('Video error:', error)
+              setVideoError(true)
+            }}
+            isMuted
+            isLooping
+            resizeMode={ResizeMode.COVER}
+            shouldPlay
+            source={{ uri: assets[0].uri }}
+            style={styles.video}
+          />
+        )} */}
       <View style={styles.overlay}>
         <View style={{ marginTop: 80, padding: 20 }}>
           <Text style={styles.header}>Ready to change the way you make money?</Text>
@@ -53,6 +54,11 @@ const Page = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  image: { // Added style for the Image
+    width: width,
+    height: height,
+    resizeMode: 'cover',
   },
   video: {
     width: width,

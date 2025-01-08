@@ -1,4 +1,5 @@
 import Colors from '@/constants/Colors';
+import { useAuth } from '@clerk/clerk-expo';
 import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo'
 import { Slot } from 'expo-router'
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -54,11 +55,9 @@ export function InitialLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
   });
-
   const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -69,13 +68,13 @@ export function InitialLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
   useEffect(() => {
     console.log("isSignedIn", isSignedIn)
-  }, [isSignedIn])
+  }, [isSignedIn]);
+
+  if (!loaded || !isLoaded) {
+    return null;
+  }
 
   return <Stack>
     <Stack.Screen name='index' options={{ headerShown: false }} />
@@ -87,7 +86,7 @@ export function InitialLayout() {
         headerShadowVisible: false,
         headerStyle: { backgroundColor: Colors.background },
         headerLeft: () => (
-          <TouchableOpacity onPress={router.back}>
+          <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={34} color={Colors.dark} />
           </TouchableOpacity>
         ),
@@ -101,33 +100,51 @@ export function InitialLayout() {
         headerShadowVisible: false,
         headerStyle: { backgroundColor: Colors.background },
         headerLeft: () => (
-          <TouchableOpacity onPress={router.back}>
+          <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={34} color={Colors.dark} />
           </TouchableOpacity>
         ),
         headerRight: () => (
-          <Link href={'/help'} asChild>
-            <TouchableOpacity >
+          <Link href="/help" asChild>
+            <TouchableOpacity
+              onPress={() => {
+                console.log('Help button pressed');
+                router.push('/help');
+              }}
+            >
               <Ionicons name="help-circle-outline" size={34} color={Colors.dark} />
             </TouchableOpacity>
           </Link>
         ),
       }}
     />
-    <Stack.Screen name='help' options={{ title: 'help', presentation: 'modal' }} />
+    <Stack.Screen
+      name="verify/[phone]"
+      options={{
+        title: '',
+        headerBackTitle: '',
+        headerShadowVisible: false,
+        headerStyle: { backgroundColor: Colors.background },
+        headerLeft: () => (
+          <TouchableOpacity onPress={router.back}>
+            <Ionicons name="arrow-back" size={34} color={Colors.dark} />
+          </TouchableOpacity>
+        ),
+      }}
+    />
+    <Stack.Screen name='help' options={{ title: 'Help', presentation: 'modal' }} />
   </Stack>
 }
-
 function RootLayoutNav() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <StatusBar style="light" />
-        <InitialLayout />
+        <ClerkLoaded>
+          <InitialLayout />
+        </ClerkLoaded>
       </GestureHandlerRootView>
     </ClerkProvider>
   );
 }
-
 
 export default RootLayoutNav;
