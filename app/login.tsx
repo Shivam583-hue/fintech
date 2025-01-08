@@ -1,17 +1,67 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native'
-import React from 'react'
-import { defaultStyles } from '@/constants/Styles'
-import Colors from '@/constants/Colors'
-import { Link } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
+import Colors from '@/constants/Colors';
+import { defaultStyles } from '@/constants/Styles';
+import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from 'react-native';
+import React from 'react';
+
+enum SignInType {
+  Phone,
+  Email,
+  Google,
+  Apple,
+}
 
 const Page = () => {
   const [countryCode, setCountryCode] = React.useState('+91')
   const [phoneNumber, setPhoneNumber] = React.useState('')
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 90 : 0
+  const router = useRouter()
+  const { signIn } = useSignIn()
 
-  const onSignin = () => {
-  }
+  const onSignIn = async (type: SignInType) => {
+    if (type === SignInType.Phone) {
+      try {
+        const fullPhoneNumber = `${countryCode}${phoneNumber}`;
+
+        const { supportedFirstFactors } = await signIn!.create({
+          identifier: fullPhoneNumber,
+        });
+        const firstPhoneFactor: any = supportedFirstFactors?.find((factor: any) => {
+          return factor.strategy === 'phone_code';
+        });
+
+        const { phoneNumberId } = firstPhoneFactor;
+
+        await signIn!.prepareFirstFactor({
+          strategy: 'phone_code',
+          phoneNumberId,
+        });
+
+        router.push({
+          pathname: '/verify/[phone]',
+          params: { phone: fullPhoneNumber, signin: 'true' },
+        });
+      } catch (err) {
+        console.log('error', JSON.stringify(err, null, 2));
+        if (isClerkAPIResponseError(err)) {
+          if (err.errors[0].code === 'form_identifier_not_found') {
+            Alert.alert('Error', err.errors[0].message);
+          }
+        }
+      }
+    }
+  };
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' keyboardVerticalOffset={keyboardVerticalOffset}>
@@ -21,7 +71,7 @@ const Page = () => {
           Enter the phone number associated with your account to sign in.
         </Text>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder='Country code' placeholderTextColor={Colors.gray} value={countryCode} />
+          <TextInput style={styles.input} placeholder='Country code' placeholderTextColor={Colors.gray} value={countryCode} onChangeText={setCountryCode} />
           <TextInput style={[styles.input, { flex: 1 }]} placeholder='Mobile number' keyboardType='numeric' value={phoneNumber} onChangeText={setPhoneNumber} placeholderTextColor={Colors.gray} />
         </View>
         <TouchableOpacity
@@ -30,7 +80,7 @@ const Page = () => {
             phoneNumber !== '' ? styles.enabled : styles.disabled,
             { marginBottom: 20 },
           ]}
-          onPress={onSignin}>
+          onPress={() => onSignIn(SignInType.Phone)}>
           <Text style={defaultStyles.buttonText}>Continue</Text>
         </TouchableOpacity>
 
@@ -40,7 +90,7 @@ const Page = () => {
           <View style={{ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Colors.gray }} />
         </View>
         <TouchableOpacity
-          //          onPress={() => onSignIn(SignInType.Email)}
+          onPress={() => onSignIn(SignInType.Email)}
           style={[
             defaultStyles.pillButton,
             {
@@ -55,7 +105,7 @@ const Page = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          //onPress={() => onSignIn(SignInType.Google)}
+          onPress={() => onSignIn(SignInType.Google)}
           style={[
             defaultStyles.pillButton,
             {
@@ -70,7 +120,7 @@ const Page = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          //onPress={() => onSignIn(SignInType.Apple)}
+          onPress={() => onSignIn(SignInType.Apple)}
           style={[
             defaultStyles.pillButton,
             {

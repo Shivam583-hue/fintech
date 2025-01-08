@@ -1,4 +1,6 @@
 import Colors from '@/constants/Colors';
+import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo'
+import { Slot } from 'expo-router'
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,7 +11,35 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
+import * as SecureStore from 'expo-secure-store';
 
+
+
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
+
+if (!publishableKey) {
+  throw new Error(
+    'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env',
+  )
+}
+
+// Cache the Clerk JWT
+const tokenCache = {
+  async getToken(key: string) {
+    try {
+      return SecureStore.getItemAsync(key);
+    } catch (err) {
+      return null;
+    }
+  },
+  async saveToken(key: string, value: string) {
+    try {
+      return SecureStore.setItemAsync(key, value);
+    } catch (err) {
+      return;
+    }
+  },
+};
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -85,10 +115,12 @@ export function InitialLayout() {
 
 function RootLayoutNav() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar style="light" />
-      <InitialLayout />
-    </GestureHandlerRootView>
+    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar style="light" />
+        <InitialLayout />
+      </GestureHandlerRootView>
+    </ClerkProvider>
   );
 }
 
