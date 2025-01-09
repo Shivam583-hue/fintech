@@ -12,8 +12,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import * as SecureStore from 'expo-secure-store';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-
+const queryClient = new QueryClient()
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
 
@@ -149,11 +150,13 @@ export function InitialLayout() {
 function RootLayoutNav() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ClerkLoaded>
-          <InitialLayout />
-        </ClerkLoaded>
-      </GestureHandlerRootView>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <ClerkLoaded>
+            <InitialLayout />
+          </ClerkLoaded>
+        </GestureHandlerRootView>
+      </QueryClientProvider>
     </ClerkProvider>
   );
 }
