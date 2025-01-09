@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo'
 import { Slot, useSegments } from 'expo-router'
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import * as SecureStore from 'expo-secure-store';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { UserInactivityProvider } from '@/context/UserInteractivity';
 
 const queryClient = new QueryClient()
 
@@ -145,17 +146,60 @@ export function InitialLayout() {
     />
     <Stack.Screen name='help' options={{ title: 'Help', presentation: 'modal' }} />
     <Stack.Screen name='(authenticated)/(tabs)' options={{ headerShown: false }} />
+    <Stack.Screen
+      name="(authenticated)/crypto/[id]"
+      options={{
+        title: '',
+        headerLeft: () => (
+          <TouchableOpacity onPress={router.back}>
+            <Ionicons name="arrow-back" size={34} color={Colors.dark} />
+          </TouchableOpacity>
+        ),
+        headerLargeTitle: true,
+        headerTransparent: true,
+        headerRight: () => (
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity>
+              <Ionicons name="notifications-outline" color={Colors.dark} size={30} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Ionicons name="star-outline" color={Colors.dark} size={30} />
+            </TouchableOpacity>
+          </View>
+        ),
+      }}
+    />
+    <Stack.Screen
+      name="(authenticated)/(modals)/lock"
+      options={{ headerShown: false, animation: 'none' }}
+    />
+    <Stack.Screen
+      name="(authenticated)/(modals)/account"
+      options={{
+        presentation: 'transparentModal',
+        animation: 'fade',
+        title: '',
+        headerTransparent: true,
+        headerLeft: () => (
+          <TouchableOpacity onPress={router.back}>
+            <Ionicons name="close-outline" size={34} color={'#fff'} />
+          </TouchableOpacity>
+        ),
+      }}
+    />
   </Stack>
 }
 function RootLayoutNav() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <QueryClientProvider client={queryClient}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <ClerkLoaded>
-            <InitialLayout />
-          </ClerkLoaded>
-        </GestureHandlerRootView>
+        <UserInactivityProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <ClerkLoaded>
+              <InitialLayout />
+            </ClerkLoaded>
+          </GestureHandlerRootView>
+        </UserInactivityProvider>
       </QueryClientProvider>
     </ClerkProvider>
   );
