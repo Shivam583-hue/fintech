@@ -1,9 +1,9 @@
 import Colors from '@/constants/Colors';
 import { useAuth } from '@clerk/clerk-expo';
 import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo'
-import { Slot } from 'expo-router'
+import { Slot, useSegments } from 'expo-router'
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
@@ -11,7 +11,6 @@ import { Stack, useRouter, Link } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { StatusBar } from 'expo-status-bar';
 import * as SecureStore from 'expo-secure-store';
 
 
@@ -57,6 +56,7 @@ export function InitialLayout() {
   });
   const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
+  const segments = useSegments()
 
   useEffect(() => {
     if (error) throw error;
@@ -70,10 +70,20 @@ export function InitialLayout() {
 
   useEffect(() => {
     console.log("isSignedIn", isSignedIn)
+    if (!isLoaded) return
+
+    const isAuthGroup = segments[0] === '(authenticated)'
+
+    if (!isAuthGroup && isSignedIn) {
+      router.push('/(authenticated)/(tabs)/home')
+    } else if (!isSignedIn) {
+      router.push('/')
+    }
+
   }, [isSignedIn]);
 
   if (!loaded || !isLoaded) {
-    return null;
+    return <Text>Loading...</Text>;
   }
 
   return <Stack>
@@ -133,6 +143,7 @@ export function InitialLayout() {
       }}
     />
     <Stack.Screen name='help' options={{ title: 'Help', presentation: 'modal' }} />
+    <Stack.Screen name='(authenticated)/(tabs)' options={{ headerShown: false }} />
   </Stack>
 }
 function RootLayoutNav() {
